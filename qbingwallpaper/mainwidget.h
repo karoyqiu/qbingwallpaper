@@ -4,6 +4,8 @@
 
 #include <QWidget>
 
+class QImage;
+class QNetworkReply;
 class QSystemTrayIcon;
 
 namespace Ui { class MainWidget; }
@@ -17,9 +19,17 @@ public:
     explicit MainWidget(QWidget *parent = Q_NULLPTR);
     virtual ~MainWidget();
 
+private slots:
+    void handleReply(QNetworkReply *reply);
+
+private:
+    void handleArchiveReply(QNetworkReply *reply);
+    void handleImageReply(QNetworkReply *reply);
+
 private:
     Ui::MainWidget *ui;
     QSystemTrayIcon *tray_;
+    QString copyright_;
 };
 
 
