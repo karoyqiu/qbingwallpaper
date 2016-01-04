@@ -3,11 +3,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <qt_windows.h>
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QJsonDocument>
+
+#include "mainwidget.h"
 
 
 static void paintCopyright(QImage *image, const QString &copyright)
@@ -126,23 +128,26 @@ static void handleArchiveReply(QNetworkReply *reply)
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication a(argc, argv);
-    QGuiApplication::setApplicationName(QS("qbingwallpaper"));
-    QGuiApplication::setApplicationDisplayName(QS("QBingWallpaper"));
-    QGuiApplication::setOrganizationName(QS("Roy QIU"));
-    QGuiApplication::setOrganizationDomain(QS("karoyqiu.com"));
+    QApplication a(argc, argv);
+    QApplication::setApplicationName(QS("qbingwallpaper"));
+    QApplication::setApplicationDisplayName(QS("QBingWallpaper"));
+    QApplication::setOrganizationName(QS("Roy QIU"));
+    QApplication::setOrganizationDomain(QS("karoyqiu.com"));
 
 
-    QNetworkAccessManager manager;
-    manager.setProxy(QNetworkProxy::NoProxy);
+    //QNetworkAccessManager manager;
+    //manager.setProxy(QNetworkProxy::NoProxy);
 
-    qDebug() << "Getting wallpaper's URL...";
-    QNetworkRequest request(QUrl(QS("https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1")));
-    QNetworkReply *reply = manager.get(request);
-    QObject::connect(reply, &QNetworkReply::finished, [reply]()
-    {
-        handleArchiveReply(reply);
-    });
+    //qDebug() << "Getting wallpaper's URL...";
+    //QNetworkRequest request(QUrl(QS("https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1")));
+    //QNetworkReply *reply = manager.get(request);
+    //QObject::connect(reply, &QNetworkReply::finished, [reply]()
+    //{
+    //    handleArchiveReply(reply);
+    //});
+
+    MainWidget w;
+    w.show();
 
     return a.exec();
 }
