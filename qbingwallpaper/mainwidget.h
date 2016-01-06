@@ -19,6 +19,9 @@ public:
     explicit MainWidget(QWidget *parent = Q_NULLPTR);
     virtual ~MainWidget();
 
+public slots:
+    void startDownload();
+
 private slots:
     void handleReply(QNetworkReply *reply);
 

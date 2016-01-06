@@ -24,7 +24,6 @@ static void paintCopyright(QImage *image, const QString &copyright)
     qDebug() << "Ratio =" << ratio;
 
     font.setPointSizeF(font.pointSizeF() * ratio);
-    qDebug() << font;
 
     QFontMetricsF metrics(font);
     QRectF rect = metrics.boundingRect(copyright);
@@ -34,7 +33,6 @@ static void paintCopyright(QImage *image, const QString &copyright)
     int y = settings.value(QS("y"), 32).toInt();
     rect.moveRight(image->width() - (x - 1) * ratio);
     rect.moveTop((y + 1) * ratio);
-    qDebug() << rect;
 
     QPainter painter(image);
     painter.setFont(font);
@@ -81,7 +79,17 @@ MainWidget::MainWidget(QWidget *parent)
     QMenu *menu = new QMenu(this);
     menu->addAction(ui->actionExit);
     tray_->setContextMenu(menu);
+}
 
+
+MainWidget::~MainWidget()
+{
+    delete ui;
+}
+
+
+void MainWidget::startDownload()
+{
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     connect(manager, &QNetworkAccessManager::finished, this, &MainWidget::handleReply);
 
@@ -90,12 +98,6 @@ MainWidget::MainWidget(QWidget *parent)
 
     QNetworkRequest request(QUrl(QS("https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1")));
     manager->get(request);
-}
-
-
-MainWidget::~MainWidget()
-{
-    delete ui;
 }
 
 
