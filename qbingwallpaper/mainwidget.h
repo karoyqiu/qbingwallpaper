@@ -30,6 +30,7 @@ private slots:
 private:
     void handleArchiveReply(QNetworkReply *reply);
     void handleImageReply(QNetworkReply *reply);
+    void paintCopyright(QImage &image) const;
 
 private:
     Ui::MainWidget *ui;

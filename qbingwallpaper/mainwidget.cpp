@@ -12,48 +12,6 @@
 #include <QSystemTrayIcon>
 
 
-static void paintCopyright(QImage *image, const QString &copyright)
-{
-    QSettings settings;
-    QFont font(settings.value(QS("fontFamily"), QS("Sans")).toString(),
-               settings.value(QS("fontSize"), 0).toInt());
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-    qreal ratio = image->height();
-    ratio /= screen->size().height();
-    qDebug() << "Ratio =" << ratio;
-
-    font.setPointSizeF(font.pointSizeF() * ratio);
-
-    QFontMetricsF metrics(font);
-    QRectF rect = metrics.boundingRect(copyright);
-    rect.setWidth(rect.width() * 1.5);
-
-    int x = settings.value(QS("x"), 32).toInt();
-    int y = settings.value(QS("y"), 32).toInt();
-    rect.moveRight(image->width() - (x - 1) * ratio);
-    rect.moveTop((y + 1) * ratio);
-
-    QPainter painter(image);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    painter.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, copyright);
-    painter.setPen(QColor("whitesmoke"));
-    painter.drawText(rect.translated(-ratio, -ratio), Qt::AlignRight | Qt::AlignVCenter, copyright);
-}
-
-
-static QString outputDirectory()
-{
-#ifdef Q_OS_WIN
-    const QSettings reg(QS(R"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\BingWallPaper\Config)"),
-                        QSettings::NativeFormat);
-    QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-    return reg.value(QS("WallPaperFolder"), defaultLocation).toString();
-#endif
-}
-
-
 static bool setWallpaper(const QString &fileName)
 {
 #ifdef Q_OS_WIN
@@ -69,7 +27,7 @@ MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
     , tray_(Q_NULLPTR)
 {
-    ui = new Ui::MainWidget();
+    ui = q_check_ptr(new Ui::MainWidget());
     ui->setupUi(this);
 
     const QSettings settings;
@@ -92,14 +50,6 @@ MainWidget::MainWidget(QWidget *parent)
     ui->fontCombo->setCurrentFont(font);
     ui->spinFontSize->setValue(font.pointSize());
 
-    tray_ = q_check_ptr(new QSystemTrayIcon(windowIcon(), this));
-    tray_->setToolTip(windowTitle());
-    tray_->show();
-
-    QMenu *menu = new QMenu(this);
-    menu->addAction(ui->actionExit);
-    tray_->setContextMenu(menu);
-
     connect(ui->buttonBrowseOutputDir, &QToolButton::clicked, this, &MainWidget::browseOutputDir);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &MainWidget::saveAndClose);
 }
@@ -113,7 +63,16 @@ MainWidget::~MainWidget()
 
 void MainWidget::startDownload()
 {
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    tray_ = q_check_ptr(new QSystemTrayIcon(windowIcon(), this));
+    tray_->setToolTip(windowTitle());
+    tray_->show();
+
+    QMenu *menu = q_check_ptr(new QMenu(this));
+    menu->addAction(ui->actionExit);
+    tray_->setContextMenu(menu);
+
+
+    QNetworkAccessManager *manager = q_check_ptr(new QNetworkAccessManager(this));
     connect(manager, &QNetworkAccessManager::finished, this, &MainWidget::handleReply);
 
     qDebug() << "Getting image URL...";
@@ -160,6 +119,11 @@ void MainWidget::handleReply(QNetworkReply *reply)
             handleImageReply(reply);
         }
     }
+    else
+    {
+        QMessageBox::critical(this, tr("Failed to download"), reply->errorString());
+        close();
+    }
 
     reply->deleteLater();
 }
@@ -179,10 +143,8 @@ void MainWidget::handleArchiveReply(QNetworkReply * reply)
     obj = value.toArray().first().toObject();
     copyright_ = obj.value("copyright").toString();
     QString url = QS("https://www.bing.com") % obj.value(QS("url")).toString();
-    qDebug() << copyright_;
-    qDebug() << url;
 
-    qDebug() << "Downloading image...";
+    qDebug() << "Downloading" << copyright_ << "from" << url;
     tray_->setToolTip(tr("Downloading image..."));
 
     QNetworkAccessManager *manager = reply->manager();
@@ -193,20 +155,58 @@ void MainWidget::handleArchiveReply(QNetworkReply * reply)
 void MainWidget::handleImageReply(QNetworkReply *reply)
 {
     QImage image = QImage::fromData(reply->readAll());
-    paintCopyright(&image, copyright_);
+
+    if (ui->groupCopyright->isChecked())
+    {
+        paintCopyright(image);
+    }
 
     QFileInfo info(reply->url().fileName());
-    QDir dir(outputDirectory());
+    QDir dir(ui->editOutputDir->text());
     QString fileName = dir.absoluteFilePath(info.completeBaseName() % QS(".png"));
 
-    qDebug() << "Setting wallpaper...";
+    qDebug() << "Setting wallpaper to" << fileName;
 
-    if (image.save(fileName) && setWallpaper(QDir::toNativeSeparators(fileName)))
+    if (image.save(fileName))
     {
-        close();
+        if (!setWallpaper(QDir::toNativeSeparators(fileName)))
+        {
+            QMessageBox::critical(this, windowTitle(), tr("Failed to set the wallpaper."));
+        }
     }
     else
     {
-        qCritical() << "Failed to save image.";
+        QMessageBox::critical(this, windowTitle(), tr("Failed to save the picture."));
     }
+
+    close();
+}
+
+
+void MainWidget::paintCopyright(QImage &image) const
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    qreal ratio = image.height();
+    ratio /= screen->size().height();
+    qDebug() << "Ratio =" << ratio;
+
+    QFont font = ui->fontCombo->currentFont();
+    font.setPointSizeF(font.pointSizeF() * ratio);
+
+    QFontMetricsF metrics(font);
+    QRectF rect = metrics.boundingRect(copyright_);
+    rect.setWidth(rect.width() * 1.5);
+
+    const QSettings settings;
+    int x = settings.value(QS("x"), 32).toInt();
+    int y = settings.value(QS("y"), 32).toInt();
+    rect.moveRight(image.width() - (x - 1) * ratio);
+    rect.moveTop((y + 1) * ratio);
+
+    QPainter painter(&image);
+    painter.setFont(font);
+    painter.setPen(Qt::black);
+    painter.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, copyright_);
+    painter.setPen(QColor("whitesmoke"));
+    painter.drawText(rect.translated(-ratio, -ratio), Qt::AlignRight | Qt::AlignVCenter, copyright_);
 }
