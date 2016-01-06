@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>karoyqiu@gmail.com</author>
  <class>MainWidget</class>
  <widget class="QWidget" name="MainWidget">
   <property name="geometry">
@@ -7,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>181</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +18,111 @@
    <iconset resource="resource.qrc">
     <normaloff>:/image/bingwallpaper.ico</normaloff>:/image/bingwallpaper.ico</iconset>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelOutputDir">
+       <property name="text">
+        <string>&amp;Save wallpapers to:</string>
+       </property>
+       <property name="buddy">
+        <cstring>editOutputDir</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="editOutputDir">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QToolButton" name="buttonBrowseOutputDir">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupCopyright">
+     <property name="title">
+      <string>Show copyright at top right corner</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelFontFamily">
+        <property name="text">
+         <string>&amp;Font family:</string>
+        </property>
+        <property name="buddy">
+         <cstring>fontCombo</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QFontComboBox" name="fontCombo"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelFontSize">
+        <property name="text">
+         <string>Font &amp;size:</string>
+        </property>
+        <property name="buddy">
+         <cstring>spinFontSize</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinFontSize">
+        <property name="specialValueText">
+         <string>Auto</string>
+        </property>
+        <property name="suffix">
+         <string> point</string>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkAutorun">
+     <property name="text">
+      <string>Run at user logon</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
   <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
@@ -27,6 +133,14 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>editOutputDir</tabstop>
+  <tabstop>buttonBrowseOutputDir</tabstop>
+  <tabstop>groupCopyright</tabstop>
+  <tabstop>fontCombo</tabstop>
+  <tabstop>spinFontSize</tabstop>
+  <tabstop>checkAutorun</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>
@@ -44,6 +158,22 @@
     <hint type="destinationlabel">
      <x>199</x>
      <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>actionExit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>
