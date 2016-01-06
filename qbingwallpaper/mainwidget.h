@@ -23,6 +23,8 @@ public slots:
     void startDownload();
 
 private slots:
+    void browseOutputDir();
+    void saveAndClose();
     void handleReply(QNetworkReply *reply);
 
 private:

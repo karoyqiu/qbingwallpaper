@@ -7,16 +7,16 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QSettings>
+#include <QStandardPaths>
 #include <QSystemTrayIcon>
 
 
 static void paintCopyright(QImage *image, const QString &copyright)
 {
     QSettings settings;
-    settings.setValue("fontFamily", "Microsoft YaHei");
-
     QFont font(settings.value(QS("fontFamily"), QS("Sans")).toString(),
-               settings.value(QS("fontSize"), -1).toInt());
+               settings.value(QS("fontSize"), 0).toInt());
 
     QScreen *screen = QGuiApplication::primaryScreen();
     qreal ratio = image->height();
@@ -72,6 +72,26 @@ MainWidget::MainWidget(QWidget *parent)
     ui = new Ui::MainWidget();
     ui->setupUi(this);
 
+    const QSettings settings;
+    QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+
+#ifdef Q_OS_WIN
+    {
+        const QSettings reg(QS(R"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\BingWallPaper\Config)"),
+                            QSettings::NativeFormat);
+        defaultLocation = reg.value(QS("WallPaperFolder"), defaultLocation).toString();
+    }
+#endif
+
+    defaultLocation = settings.value(QS("outputDir"), defaultLocation).toString();
+    ui->editOutputDir->setText(defaultLocation);
+    ui->groupCopyright->setChecked(settings.value(QS("printCopyright"), true).toBool());
+
+    QFont font(settings.value(QS("fontFamily"), tr("Sans")).toString(),
+               settings.value(QS("fontSize"), 0).toInt());
+    ui->fontCombo->setCurrentFont(font);
+    ui->spinFontSize->setValue(font.pointSize());
+
     tray_ = q_check_ptr(new QSystemTrayIcon(windowIcon(), this));
     tray_->setToolTip(windowTitle());
     tray_->show();
@@ -79,6 +99,9 @@ MainWidget::MainWidget(QWidget *parent)
     QMenu *menu = new QMenu(this);
     menu->addAction(ui->actionExit);
     tray_->setContextMenu(menu);
+
+    connect(ui->buttonBrowseOutputDir, &QToolButton::clicked, this, &MainWidget::browseOutputDir);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &MainWidget::saveAndClose);
 }
 
 
@@ -98,6 +121,29 @@ void MainWidget::startDownload()
 
     QNetworkRequest request(QUrl(QS("https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1")));
     manager->get(request);
+}
+
+
+void MainWidget::browseOutputDir()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, QString(), ui->editOutputDir->text());
+
+    if (!dir.isEmpty())
+    {
+        ui->editOutputDir->setText(QDir::toNativeSeparators(dir));
+    }
+}
+
+
+void MainWidget::saveAndClose()
+{
+    QSettings settings;
+    settings.setValue(QS("outputDir"), ui->editOutputDir->text());
+    settings.setValue(QS("printCopyright"), ui->groupCopyright->isChecked());
+    settings.setValue(QS("fontFamily"), ui->fontCombo->currentFont().family());
+    settings.setValue(QS("fontSize"), ui->spinFontSize->value());
+
+    close();
 }
 
 
