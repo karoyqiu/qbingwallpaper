@@ -15,6 +15,30 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationDomain(QS("karoyqiu.com"));
 
 
+    QLocale locale;
+    QTranslator translatorQt;
+
+    if (translatorQt.load(locale, QS("qt"), QS("_"), QApplication::applicationDirPath()))
+    {
+        QApplication::installTranslator(&translatorQt);
+    }
+    else
+    {
+        qWarning() << "Failed to load translation file for Qt.";
+    }
+
+    QTranslator translatorApp;
+
+    if (translatorApp.load(locale, QApplication::applicationName(), QS("_"), QApplication::applicationDirPath()))
+    {
+        QApplication::installTranslator(&translatorApp);
+    }
+    else
+    {
+        qWarning() << "Failed to load translation file for" << qPrintable(QApplication::applicationName());
+    }
+
+
     QCommandLineParser parser;
     parser.setApplicationDescription(QApplication::translate("main", "Download and set today's Bing wallpaper."));
     parser.addHelpOption();

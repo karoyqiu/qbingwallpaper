@@ -50,7 +50,7 @@
    <item>
     <widget class="QGroupBox" name="groupCopyright">
      <property name="title">
-      <string>Show copyright at top right corner</string>
+      <string>Show &amp;copyright at top right corner</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -98,7 +98,7 @@
    <item>
     <widget class="QCheckBox" name="checkAutorun">
      <property name="text">
-      <string>Run at user logon</string>
+      <string>&amp;Run at user logon</string>
      </property>
     </widget>
    </item>
