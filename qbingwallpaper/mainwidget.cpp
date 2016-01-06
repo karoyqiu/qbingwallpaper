@@ -9,6 +9,7 @@
 #include <QNetworkRequest>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QSysInfo>
 #include <QSystemTrayIcon>
 
 
@@ -33,13 +34,17 @@ MainWidget::MainWidget(QWidget *parent)
     const QSettings settings;
     QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
 
-#ifdef Q_OS_WIN
+    if (QSysInfo::WindowsVersion != QSysInfo::WV_None)
     {
-        const QSettings reg(QS(R"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\BingWallPaper\Config)"),
-                            QSettings::NativeFormat);
-        defaultLocation = reg.value(QS("WallPaperFolder"), defaultLocation).toString();
+        const QSettings reg(QS(R"(HKEY_CURRENT_USER\SOFTWARE\Microsoft)"), QSettings::NativeFormat);
+        defaultLocation = reg.value(QS(R"(BingWallPaper\Config\WallPaperFolder)"), defaultLocation).toString();
+
+        ui->checkAutorun->setChecked(reg.contains(QS("Windows/CurrentVersion/Run/QBingWallpaper")));
     }
-#endif
+    else
+    {
+        qCritical() << "Current platform is not supported:" << QSysInfo::prettyProductName();
+    }
 
     defaultLocation = settings.value(QS("outputDir"), defaultLocation).toString();
     ui->editOutputDir->setText(defaultLocation);
@@ -101,6 +106,20 @@ void MainWidget::saveAndClose()
     settings.setValue(QS("printCopyright"), ui->groupCopyright->isChecked());
     settings.setValue(QS("fontFamily"), ui->fontCombo->currentFont().family());
     settings.setValue(QS("fontSize"), ui->spinFontSize->value());
+
+    if (QSysInfo::WindowsVersion != QSysInfo::WV_None)
+    {
+        QSettings reg(QS(R"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run)"), QSettings::NativeFormat);
+
+        if (ui->checkAutorun->isChecked())
+        {
+            reg.setValue(QS("QBingWallpaper"), QS(R"("%1" -a)").arg(QDir::toNativeSeparators(QApplication::applicationFilePath())));
+        }
+        else
+        {
+            reg.remove(QS("QBingWallpaper"));
+        }
+    }
 
     close();
 }

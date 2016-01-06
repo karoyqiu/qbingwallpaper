@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>153</height>
+    <height>181</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,6 +96,26 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="checkAutorun">
+     <property name="text">
+      <string>Run at user logon</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
@@ -113,6 +133,14 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>editOutputDir</tabstop>
+  <tabstop>buttonBrowseOutputDir</tabstop>
+  <tabstop>groupCopyright</tabstop>
+  <tabstop>fontCombo</tabstop>
+  <tabstop>spinFontSize</tabstop>
+  <tabstop>checkAutorun</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>
@@ -144,8 +172,8 @@
      <y>132</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>76</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>
