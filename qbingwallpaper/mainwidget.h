@@ -19,12 +19,18 @@ public:
     explicit MainWidget(QWidget *parent = Q_NULLPTR);
     virtual ~MainWidget();
 
+public slots:
+    void startDownload();
+
 private slots:
+    void browseOutputDir();
+    void saveAndClose();
     void handleReply(QNetworkReply *reply);
 
 private:
     void handleArchiveReply(QNetworkReply *reply);
     void handleImageReply(QNetworkReply *reply);
+    void paintCopyright(QImage &image) const;
 
 private:
     Ui::MainWidget *ui;
