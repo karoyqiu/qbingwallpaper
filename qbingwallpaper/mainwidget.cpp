@@ -30,6 +30,15 @@ MainWidget::MainWidget(QWidget *parent)
 {
     ui = q_check_ptr(new Ui::MainWidget());
     ui->setupUi(this);
+	ui->buttonBox->addButton(tr("Download"), QDialogButtonBox::ResetRole);
+
+	connect(ui->buttonBox, &QDialogButtonBox::clicked, this, [=](QAbstractButton *button)
+	{
+		if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::ResetRole)
+		{
+			startDownload();
+		}
+	});
 
     const QSettings settings;
     QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
